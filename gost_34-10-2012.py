@@ -10,8 +10,9 @@ class GOST34102012:
     Алгоритм электронной цифровой подписи по ГОСТ Р 34.10-2012 с использованием эллиптической кривой и хэш-функции ГОСТ Р 34.11-2012
     """
 
-    # КОЭФФИЦИЕНТЫ АЛГОРИТМА
+    # НАСТРОЙКИ АЛГОРИТМА
     # ---------------------------------------------
+
     KEY_SET = {
         256: "id-tc26-gost-3410-2012-256-paramSetA",
         512: "id-tc26-gost-3410-2012-512-paramSetA"
@@ -21,6 +22,10 @@ class GOST34102012:
         256: "streebog256",
         512: "streebog512"
     }
+
+
+    # КОЭФФИЦИЕНТЫ АЛГОРИТМА
+    # ---------------------------------------------
 
     GOST_COEFF = {
         "id-tc26-gost-3410-2012-256-paramSetA": {
@@ -45,7 +50,6 @@ class GOST34102012:
     def __init__(self, size: int = 256):
         """
         Инициализация параметров эллиптической кривой для 256-битного ключа
-        Параметры (ГОСТ Р 34.10-2012)
         :param size: длина ключа (бит)
         """
         if size not in self.KEY_SET:
@@ -73,8 +77,8 @@ class GOST34102012:
             self.GOST_COEFF[param_set]["y"]
         )
 
-
-    def _compute_mod_inverse(self, value: int, modulus: int) -> int:
+    @staticmethod
+    def _compute_mod_inverse(value: int, modulus: int) -> int:
         """
         Вычисление обратного элемента по модулю с использованием расширенного алгоритма Евклида.
         Обратный элемент существует только если value и modulus взаимно просты (НОД = 1).
@@ -177,7 +181,7 @@ class GOST34102012:
             scalar = scalar // 2  # Сдвиг вправо
         return result
 
-    def _get_message_hash(self, message: bytes) -> int:
+    def _calc_message_hash(self, message: bytes) -> int:
         """
         Вычисление хеш-функции сообщения по ГОСТ Р 34.11-2012
         :param message: Исходное сообщение
@@ -206,11 +210,12 @@ class GOST34102012:
         :return: Подпись (r, s)
         """
         # Вычисление хэш-функции ГОСТ Р 34.11-2012
-        message_hash = self._get_message_hash(message)
+        message_hash = self._calc_message_hash(message)
         e = message_hash % self.group_order
         if e == 0:
             e = 1
 
+        r, s = 0, 0
         while True:
             # Генерация временного параметра k
             k = secrets.randbelow(self.group_order - 1) + 1
@@ -245,7 +250,7 @@ class GOST34102012:
             return False
 
         # Вычисление хеша сообщения
-        message_hash = self._get_message_hash(message)
+        message_hash = self._calc_message_hash(message)
         e = message_hash % self.group_order
         if e == 0:
             e = 1
@@ -263,6 +268,9 @@ class GOST34102012:
         # Проверка условия R ≡ r mod q
         return verification_point is not None and verification_point[0] % self.group_order == r
 
+
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# ---------------------------------------------
 
 def save_key(key: tuple[int,int] | int, filename: str, file_attrs: list = None) -> int:
     """
@@ -324,6 +332,9 @@ def verify_result(is_valid: bool, data_filename: str, signature_filename: str) -
     """
     return f"\n✓ Подлинность файла [{data_filename}] ПОДТВЕРЖДЕНА" if is_valid else f"✗ Подпись [{signature_filename[0]}] НЕДЕЙСТВИТЕЛЬНА"
 
+
+# ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ
+# ---------------------------------------------
 
 def interactive_mode():
     """Интерактивный режим работы"""
