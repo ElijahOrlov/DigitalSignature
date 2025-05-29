@@ -532,6 +532,9 @@ def arguments_mode():
 # ---------------------------------------------
 
 def main():
+    """
+    Точка входа в приложение
+    """
     if len(sys.argv) == 1:
         interactive_mode()
     else:
