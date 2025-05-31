@@ -472,8 +472,8 @@ def arguments_mode():
     # Генерация ключей
     genkeys_command = 'genkeys'
     gen_parser = subparsers.add_parser(genkeys_command, help='Генерация ключевой пары')
-    gen_parser.add_argument('-pub', '--public_key', type=str, default="public.key", help='Файл публичного ключа (по умолчанию public.key)')
-    gen_parser.add_argument('-priv', '--private_key', type=str, default="private.key", help='Файл приватного ключа (по умолчанию private.key)')
+    gen_parser.add_argument('-pub', '--public', type=str, default="public.key", help='Файл публичного ключа (по умолчанию public.key)')
+    gen_parser.add_argument('-priv', '--private', type=str, default="private.key", help='Файл приватного ключа (по умолчанию private.key)')
 
     # Подписание файла
     sign_command = 'sign'
